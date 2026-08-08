@@ -75,9 +75,19 @@ def run_agent(
 
         for tool_call in response.tool_calls:
             step += 1
-            result, exit_code = dispatch(
-                tool_call.name, tool_call.arguments, workspace=workspace, sandbox=sandbox
-            )
+            try:
+                result, exit_code = dispatch(
+                    tool_call.name, tool_call.arguments, workspace=workspace, sandbox=sandbox
+                )
+            except Exception as exc:
+                # dispatch() itself already turns model-caused failures (bad path, bad
+                # command, tool timeout) into result strings. Getting here means something
+                # unexpected broke on the harness side (e.g. Sandbox.exec called before
+                # start(), a permission error writing to disk) — that's not the model's
+                # mistake to observe, it's ours to record and stop on.
+                transcript.write(trial_id, step, "error", detail=str(exc))
+                transcript.write(trial_id, step, "trial_end", stop_reason="error")
+                raise
             transcript.write(
                 trial_id,
                 step,
