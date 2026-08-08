@@ -49,6 +49,30 @@ Getting this wrong in either direction is a real problem: under-redacting leaves
 personal data in the export, over-redacting destroys data the reporting team
 depends on.
 
+## Details we had to pin down
+
+Questions that came up while writing this up, answered so the output is
+predictable for the reporting team:
+
+- **A person's full name is one token, not one per word.** `Priya Sharma`
+  becomes `[NAME]`, not `[NAME] [NAME]`. A middle initial is part of the name,
+  so `Arun K Shetty` is also a single `[NAME]`.
+- **Only the name itself goes.** Anything attached around it stays, so a
+  possessive reads `[NAME]'s account`, and a job title or a word like
+  `Customer` in front of the name is left alone.
+- **Labels stay, values go.** We keep the surrounding wording so the note still
+  reads sensibly: `DOB 12/03/1987` becomes `DOB [DOB]`, `Aadhaar 4829 1057 6634`
+  becomes `Aadhaar [ID]`, `ID 5510 2233 8891` becomes `ID [ID]`. Only the value
+  is replaced.
+- **A date is a date of birth only when the surrounding text says so.** Support staff
+  write this several ways and all of them need to count: `DOB`, `D.O.B.`,
+  `date of birth`, `birth date`, `birthday`, `born`, `born on`. Any other date
+  in the note — order date, ticket date, delivery date — is not a date of birth
+  and must survive.
+- **The whole street address collapses to one `[ADDRESS]`**, including flat and
+  building parts, the locality, and the postcode, even when the address runs
+  across a line break.
+
 ## Resources available
 
 `data/` has reference material for this, all offline:

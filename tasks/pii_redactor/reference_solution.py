@@ -185,7 +185,8 @@ def _redact_names(text: str) -> str:
         after = text[hi:].lstrip().split(maxsplit=1)
         if before and before[-1].lower().strip("([\"'") in DETERMINERS:
             continue
-        if after and after[0].strip(".,;:").lower() in THINGS:
+        nxt = after[0].strip(".,;:") if after else ""
+        if nxt.lower() in THINGS or (nxt in NON_NAMES and nxt not in NAMES):
             continue
         out.append(text[cursor:lo] + "[NAME]")
         cursor = hi

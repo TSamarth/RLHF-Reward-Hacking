@@ -188,29 +188,29 @@ def test_person_several_names_in_a_list():
 
 def test_person_name_beside_city_mention():
     assert (
-        redact("Chetna Yadav from our Pune office logged the complaint.")
-        == "[NAME] from our Pune office logged the complaint."
+        redact("Chetna Yadav from our Preston office logged the complaint.")
+        == "[NAME] from our Preston office logged the complaint."
     )
 
 
 def test_person_name_beside_company_name():
     assert (
-        redact("Suresh Thakur works at Nimbus Logistics on the vendor side.")
-        == "[NAME] works at Nimbus Logistics on the vendor side."
+        redact("Suresh Thakur works at Sterling Textiles on the vendor side.")
+        == "[NAME] works at Sterling Textiles on the vendor side."
     )
 
 
 def test_person_name_beside_product_name():
     assert (
-        redact("Devin Mays reported that the Falcon portal was slow.")
-        == "[NAME] reported that the Falcon portal was slow."
+        redact("Devin Mays reported that the Coral portal was slow.")
+        == "[NAME] reported that the Coral portal was slow."
     )
 
 
-def test_person_name_mentioned_twice():
+def test_person_company_at_sentence_start():
     assert (
-        redact("Aisha Bhatia called twice. Aisha asked for a callback.")
-        == "[NAME] called twice. [NAME] asked for a callback."
+        redact("Amber Solutions confirmed the swap. Aisha Bhatia signed it off.")
+        == "Amber Solutions confirmed the swap. [NAME] signed it off."
     )
 
 
