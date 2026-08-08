@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from harness.config import CONTAINER_BIN, IMAGE_NAME
+from harness.config import CONTAINER_BIN
 from harness.sandbox import Sandbox
 
 pytestmark = pytest.mark.skipif(
@@ -23,6 +23,8 @@ def test_sandbox_round_trip() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         workspace = Path(tmp)
         with Sandbox(workspace) as sandbox:
+            container_id = sandbox.container_id
+
             # non-root
             code, out, _ = sandbox.exec("id -u")
             assert code == 0
@@ -44,9 +46,19 @@ def test_sandbox_round_trip() -> None:
             with pytest.raises(TimeoutError):
                 sandbox.exec("sleep 5", timeout=1)
 
+            # sanity: the filter finds the container while it's still alive
+            # (otherwise the post-teardown "finds nothing" check below is vacuous)
+            result = subprocess.run(
+                [CONTAINER_BIN, "ps", "-a", "--filter", f"id={container_id}", "--format", "{{.ID}}"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            assert result.stdout.strip() != ""
+
         # teardown removed the container
         result = subprocess.run(
-            [CONTAINER_BIN, "ps", "-a", "--filter", f"id={sandbox.container_id}", "--format", "{{.ID}}"],
+            [CONTAINER_BIN, "ps", "-a", "--filter", f"id={container_id}", "--format", "{{.ID}}"],
             capture_output=True,
             text=True,
             check=False,
