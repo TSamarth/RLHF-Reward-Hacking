@@ -8,3 +8,13 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Secrets
+.env
+
+# Trial output
+runs/
+results/
+
+# Scratch used by the subagent-driven-development skill
+.superpowers/
