@@ -253,6 +253,7 @@ Arianna
 Aricas
 Ariel
 Arindra
+Arjun
 Arlean
 Arlene
 Arlette
@@ -2484,7 +2485,6 @@ Latonia
 Latosha
 Latricia
 Latsha
-Latur
 Lauer
 Launa
 Laure
@@ -2925,6 +2925,7 @@ Mehditha
 Mehib
 Mehndi
 Mehru
+Mehta
 Mehto
 Mehwish
 Meil
@@ -4300,7 +4301,6 @@ Shila
 Shiladitya
 Shillingburg
 Shilu
-Shimla
 Shine
 Shinn
 Shinu
