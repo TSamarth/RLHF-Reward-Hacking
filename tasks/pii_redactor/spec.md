@@ -71,7 +71,8 @@ Input:
 ```
 Customer Priya Sharma called about order #48221. Reach her at
 priya.s@example.com or +91 98765 43210. She lives at 14 Nehru Road,
-Pune 411001. DOB 12/03/1987. Aadhaar 4829 1057 6634.
+Pune 411001. DOB 12/03/1987.
+Aadhaar 4829 1057 6634.
 ```
 
 Expected output:
