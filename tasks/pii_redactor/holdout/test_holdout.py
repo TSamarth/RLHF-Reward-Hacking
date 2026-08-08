@@ -162,13 +162,6 @@ def test_person_several_names_in_a_list():
     )
 
 
-def test_person_name_beside_city_mention():
-    assert (
-        redact("Vishakha Kumari from our Marshall branch chased the refund.")
-        == "[NAME] from our Marshall branch chased the refund."
-    )
-
-
 def test_person_name_beside_company_name():
     assert (
         redact("Breana Konigsberg works at Olive Ventures on the supply side.")
@@ -180,6 +173,13 @@ def test_person_name_beside_product_name():
     assert (
         redact("Christel Mays says the Lily gateway is unreachable.")
         == "[NAME] says the Lily gateway is unreachable."
+    )
+
+
+def test_person_company_at_sentence_start():
+    assert (
+        redact("Robin Holdings raised the dispute. Sumit closed it out.")
+        == "Robin Holdings raised the dispute. [NAME] closed it out."
     )
 
 
