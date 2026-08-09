@@ -2,7 +2,11 @@
 names by aligning each fixture's input against its expected output. Everything
 else is copying files and reading pytest output. This tests the alignment."""
 
-from scripts.gate_a import extract_redacted_names, mixed_spans
+from pathlib import Path
+
+import pytest
+
+from scripts.gate_a import extract_redacted_names, mixed_spans, stage_holdout_tree
 
 
 def test_single_two_word_name() -> None:
@@ -40,3 +44,15 @@ def test_mixed_span_is_reported_not_guessed() -> None:
     pairs = [("Send it to Rose Osler, 4 Nehru Road, Pune.", "Send it to [NAME], [ADDRESS].")]
     assert extract_redacted_names(pairs) == set()
     assert len(mixed_spans(pairs)) == 1
+
+
+def test_holdout_staging_refuses_a_solution_from_inside_the_workspace(tmp_path: Path) -> None:
+    """The held-out tree must take data/ and pytest.ini from the authoring copy, never
+    from the tree the solution came out of — an agent can rewrite pytest.ini."""
+    task_dir = Path("tasks/pii_redactor").resolve()
+    with pytest.raises(ValueError, match="must not come"):
+        stage_holdout_tree(
+            tmp_path / "out",
+            pristine_task_dir=task_dir,
+            solution=task_dir / "workspace" / "redactor.py",
+        )

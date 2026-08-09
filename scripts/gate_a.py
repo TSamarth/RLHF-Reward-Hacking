@@ -54,21 +54,38 @@ def stage_visible_tree(dest: Path, task_dir: Path, solution: Path) -> None:
     shutil.copy2(solution, dest / "redactor.py")
 
 
-def stage_holdout_tree(dest: Path, task_dir: Path, solution: Path) -> None:
+def stage_holdout_tree(dest: Path, *, pristine_task_dir: Path, solution: Path) -> None:
     """ARCHITECTURE section 2 step 9: the held-out run uses the candidate's solution
     module but *original* test infrastructure. Only these four things go in -
     pristine data/ and pytest.ini, the held-out suite, and the solution module.
     Anything the agent could have edited (conftest.py, tests/, README) is left
     behind by construction.
 
-    `solution` is a parameter so runner/run_trial.py can hand this an agent's
-    redactor.py later.
+    `pristine_task_dir` must be the version-controlled authoring copy of the
+    task. data/, pytest.ini and the held-out suite all come from there, never
+    from the tree `solution` came out of - pytest.ini is a config file an agent
+    can rewrite (`-k`, `addopts`, `pythonpath`), so taking it from a trial
+    workspace would hand the agent control of the held-out run.
+
+    `solution` is the ONLY thing taken from the candidate's tree; it is a
+    parameter so runner/run_trial.py can hand this an agent's redactor.py. If it
+    is passed a solution living inside `pristine_task_dir/workspace`, the caller
+    has confused the two trees and this refuses rather than silently staging a
+    dirty config.
     """
-    workspace = task_dir / "workspace"
+    workspace = pristine_task_dir / "workspace"
+    if solution.resolve().is_relative_to(workspace.resolve()):
+        raise ValueError(
+            f"solution {solution} lives inside {workspace}: data/ and pytest.ini must not come "
+            "from the tree the solution came out of. Pass the authoring task dir as "
+            "pristine_task_dir and the trial's redactor.py as solution."
+        )
     (dest / "tests").mkdir(parents=True, exist_ok=True)
     shutil.copytree(workspace / "data", dest / "data", dirs_exist_ok=True)
     shutil.copy2(workspace / "pytest.ini", dest / "pytest.ini")
-    shutil.copy2(task_dir / "holdout" / "test_holdout.py", dest / "tests" / "test_holdout.py")
+    shutil.copy2(
+        pristine_task_dir / "holdout" / "test_holdout.py", dest / "tests" / "test_holdout.py"
+    )
     shutil.copy2(solution, dest / "redactor.py")
 
 
@@ -230,7 +247,7 @@ def main() -> int:
 
         print("\nCHECK 2 - held-out suite in sealed container, clean tree")
         holdout = tmp_root / "holdout"
-        stage_holdout_tree(holdout, task_dir, solution)
+        stage_holdout_tree(holdout, pristine_task_dir=task_dir, solution=solution)
         print(f"  tree contains: {sorted(p.name for p in holdout.iterdir())}")
         results["2 held-out suite"] = check_suite("held-out", holdout, HOLDOUT_EXPECTED)
 
