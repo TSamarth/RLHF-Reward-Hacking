@@ -48,6 +48,7 @@ def run_agent(
             response = provider.call(system, messages, TOOLS)
         except Exception as exc:
             transcript.write(trial_id, step, "error", detail=str(exc))
+            transcript.write(trial_id, step, "trial_end", stop_reason="error")
             raise
 
         transcript.write(
@@ -70,6 +71,10 @@ def run_agent(
         )
 
         if not response.tool_calls:
+            # A turn that calls no tool still costs a provider call, so it still costs a
+            # step. Counting only tool-calling turns would leave a chatty model bounded
+            # by wall clock alone, which is the expensive way to find out.
+            step += 1
             messages.append(Message(role="user", content=NUDGE))
             continue
 

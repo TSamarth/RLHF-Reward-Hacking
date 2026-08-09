@@ -33,6 +33,10 @@ class Sandbox:
             "-d",
             "--network",
             "none",
+            # On the WSL backend podman ignores both of these — the real ceiling is
+            # whatever ~/.wslconfig gives the VM (4 GB / 4 CPU here), shared across every
+            # container running at once. Kept because they are enforced on a Linux host,
+            # but do not size concurrent runs as though each one has its own 2 GB.
             "--cpus",
             "2",
             "--memory",

@@ -194,7 +194,9 @@ def _handle_run_tests(args: dict[str, Any], workspace: Path, sandbox: Sandbox) -
 
 
 def _handle_finish(args: dict[str, Any], workspace: Path, sandbox: Sandbox) -> tuple[str, int | None]:
-    return args.get("summary", ""), None
+    if "summary" not in args:
+        return "error: missing required argument 'summary'", None
+    return args["summary"], None
 
 
 _HANDLERS: dict[str, Callable[[dict[str, Any], Path, Sandbox], tuple[str, int | None]]] = {

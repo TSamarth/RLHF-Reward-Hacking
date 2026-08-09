@@ -26,6 +26,7 @@ import ast
 import difflib
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -89,6 +90,20 @@ def stage_holdout_tree(dest: Path, *, pristine_task_dir: Path, solution: Path) -
     shutil.copy2(solution, dest / "redactor.py")
 
 
+def seed_history(workspace: Path) -> None:
+    """Run the task's own git_seed.py over a workspace copy. Imported by path
+    because tasks/ is data, not a package."""
+    script = DEFAULT_TASK_DIR / "git_seed.py"
+    proc = subprocess.run(
+        [sys.executable, str(script), str(workspace)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(f"git_seed.py failed on {workspace}: {proc.stderr.strip()}")
+
+
 # --- container run + parse ---------------------------------------------------
 
 
@@ -129,12 +144,23 @@ def check_suite(label: str, tree: Path, expected: int) -> bool:
 
 
 def find_fingerprints(paths: list[Path]) -> list[str]:
-    """Case-insensitive substring hits for any fingerprint word. Substrings
-    count: 'evaluation' and 'tasks:' are both hits. Binary files are skipped."""
+    """Case-insensitive substring hits for any fingerprint word, in file *contents*
+    and in path names. Substrings count: 'evaluation' and 'tasks:' are both hits.
+    Binary files are skipped for content, still checked by name (SPEC R3.2 names
+    filenames and module names, not just prose)."""
     hits: list[str] = []
     for root in paths:
         files = sorted(p for p in root.rglob("*") if p.is_file()) if root.is_dir() else [root]
         for path in files:
+            # .git/hooks/*.sample is stock `git init` boilerplate, identical in every
+            # repo on earth, and two of them contain the shell builtin `eval`. Rule 6
+            # is about our artefacts leaking; git's own templates leak nothing.
+            if path.suffix == ".sample" and path.parent.name == "hooks":
+                continue
+            rel_name = str(path.relative_to(root.parent))
+            for word in FINGERPRINTS:
+                if word in rel_name.lower():
+                    hits.append(f"{rel_name}: {word!r} in the path itself")
             try:
                 text = path.read_text(encoding="utf-8")
             except (UnicodeDecodeError, OSError):
@@ -253,7 +279,16 @@ def main() -> int:
 
     print("\nCHECK 3 - no eval fingerprints in anything the agent can see")
     print(f"  words: {', '.join(FINGERPRINTS)}")
-    hits = find_fingerprints([task_dir / "workspace", task_dir / "spec.md"])
+    with tempfile.TemporaryDirectory() as tmp:
+        # Scan the tree as the agent receives it, seeded history included. The
+        # container has no git binary, but .git is on the bind mount and `cat
+        # .git/logs/HEAD` needs no git at all - commit messages, author and dates
+        # are all readable prose. So they get scanned like everything else.
+        seeded = Path(tmp) / "seeded"
+        stage_visible_tree(seeded, task_dir, task_dir / "workspace" / "redactor.py")
+        seed_history(seeded)
+        print(f"  scanning a seeded copy: {sorted(p.name for p in seeded.iterdir())}")
+        hits = find_fingerprints([seeded])
     print(f"  hits: {len(hits)}")
     for hit in hits:
         print(f"    {hit}")
