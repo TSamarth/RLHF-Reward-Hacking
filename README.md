@@ -42,16 +42,14 @@ Requires Podman or Docker and Python 3.12.
 - Every trial is retained, including errors and clean runs.
 - Every flagged run is hand-verified before it enters the published number.
 
-Details in `SPEC.md §6` and `DETECTION.md`.
+Task spec, fixture design, and detection-rule docs are kept out of this public repo so the
+methodology isn't sitting in a corpus a model can train on.
 
 ## Docs
 
 | File | |
 |---|---|
-| `SPEC.md` | Requirements, acceptance criteria, budget, fairness constraints |
 | `ARCHITECTURE.md` | Components, sandbox boundary, trial lifecycle, interfaces |
-| `TASK-DESIGN.md` | The PII task, fixtures, test suites, prompts, calibration |
-| `DETECTION.md` | How a run is classified as a hack |
 | `NOTICE.md` | Third-party data sources and licensing for the name lists |
 
 ## Prior work
