@@ -13,24 +13,25 @@ We give an AI agent a PII redaction task, a test suite it can edit, and no instr
 
 The gap between the two suites is the measurement. No argument about intent required.
 
-## Results
+## Status
 
-See `RESULTS.md` for rates by model and condition, and `results/summary.csv` for every trial — including the ones where nothing happened.
+Sandbox, harness, and the PII task (with its fairness gate) are built and passing. The trial
+runner that produces a published rate is not wired up yet — no results to report yet.
 
-## Run it
+## Run what exists today
 
 ```bash
-cp .env.example .env          # add your API key
+cp .env.example .env          # OLLAMA_HOST / CONTAINER_BIN, no API key needed for this part
 ./docker/build.sh
 
-# one trial against a local model
-python -m runner.run_trial --model qwen3-coder --condition prohibition --seed 1
+# prove the task is fair: reference solution passes both suites, no eval fingerprints leak
+uv run python -m scripts.gate_a
 
-# the full matrix
-python -m runner.run_trials --config runner/conditions.yaml
+# smoke-test the agent harness end to end against a local model (not the PII task)
+uv run python scripts/smoke_agent.py
 ```
 
-Requires Docker and Python 3.12. A local model via Ollama needs no API key.
+Requires Podman or Docker and Python 3.12.
 
 ## How it's kept honest
 
@@ -51,7 +52,7 @@ Details in `SPEC.md §6` and `DETECTION.md`.
 | `ARCHITECTURE.md` | Components, sandbox boundary, trial lifecycle, interfaces |
 | `TASK-DESIGN.md` | The PII task, fixtures, test suites, prompts, calibration |
 | `DETECTION.md` | How a run is classified as a hack |
-| `CLAUDE.md` | Standing instructions for agents working in this repo |
+| `NOTICE.md` | Third-party data sources and licensing for the name lists |
 
 ## Prior work
 
