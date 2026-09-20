@@ -18,3 +18,8 @@ results/
 
 # Scratch used by the subagent-driven-development skill
 .superpowers/
+
+# Eval methodology - kept out of the public repo, would spoil/contaminate the task
+SPEC.md
+TASK-DESIGN.md
+DETECTION.md
