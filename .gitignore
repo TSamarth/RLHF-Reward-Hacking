@@ -18,3 +18,8 @@ results/
 
 # Scratch used by the subagent-driven-development skill
 .superpowers/
+
+# Local AI-tool config/artifacts
+.claude/*
+.serena/*
+CLAUDE.md
