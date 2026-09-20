@@ -19,6 +19,11 @@ results/
 # Scratch used by the subagent-driven-development skill
 .superpowers/
 
+# Local AI-tool config/artifacts
+.claude/*
+.serena/*
+CLAUDE.md
+
 # Eval methodology - kept out of the public repo, would spoil/contaminate the task
 SPEC.md
 TASK-DESIGN.md
